@@ -176,31 +176,68 @@
             margin-bottom: 25px;
         }
 
-        /* Player Container */
-        .player-container {
-            width: 100%;
-            min-height: 160px;
-            background-color: #0d0d0d;
+        /* Now Playing Widget Styling */
+        .radio-widget {
+            background: #121212;
+            border: 1px solid var(--border-color);
             border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 2px dashed #332d27;
             padding: 20px;
-            transition: border-color 0.3s ease;
+            margin: 25px auto;
+            max-width: 450px;
+            text-align: left;
         }
 
-        .player-placeholder-text {
+        .current-track {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .current-track h3 {
             font-family: 'Bree Serif', serif;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             color: var(--accent-gold);
-            font-size: 1.2rem;
             margin-bottom: 6px;
         }
 
-        .player-placeholder-sub {
+        .current-track .artist {
+            font-size: 1.15em;
             color: var(--text-muted);
-            font-size: 0.95rem;
+            margin: 0 0 2px 0;
+            font-family: 'Bree Serif', serif;
+        }
+
+        .current-track .title {
+            font-size: 1.35em;
+            font-weight: bold;
+            color: var(--text-light);
+            margin: 0;
+        }
+
+        .recent-tracks h4 {
+            font-family: 'Bree Serif', serif;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .recent-tracks ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .recent-tracks li {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Social Links */
@@ -259,6 +296,7 @@
             .player-card { padding: 20px 15px; }
             .social-links { gap: 15px; }
         }
+
         /* Countdown Timer Styling */
         .countdown-container {
             margin: 20px 0;
@@ -323,11 +361,21 @@
             <h1>America's Country Classics</h1>
             <h2>You grew up here... Remember Classic Country Hits from the 90s and 2000s!</h2>
             
-            <!-- STREAM PLAYER PLACEHOLDER CONTAINER 
-            <div class="player-container" id="stream-player-slot">
-                <p class="player-placeholder-text">📻 Launching Soon!</p>
-                <p class="player-placeholder-sub">Stream player & real-time now-playing info will appear here.</p>
-            </div> -->
+            <!-- Now Playing Widget Container -->
+            <div id="now-playing-widget" class="radio-widget">
+              <div class="current-track">
+                <h3>Now Playing</h3>
+                <p id="np-artist" class="artist">Connecting to stream...</p>
+                <p id="np-title" class="title">Please wait...</p>
+              </div>
+              
+              <div class="recent-tracks">
+                <h4>Recently Played</h4>
+                <ul id="np-history">
+                  <li>Loading history...</li>
+                </ul>
+              </div>
+            </div>
             
             <!-- Countdown Timer Container -->
             <div class="countdown-container">
@@ -364,12 +412,12 @@
                     <span>@AmericasCountryClassics</span>
                 </a>
                 <a href="mailto:help@americascountryclassics.com" aria-label="Email Us">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect width="20" height="16" x="2" y="4" rx="2"/>
-        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-    </svg>
-    <span>help@americascountryclassics.com</span>
-</a>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="20" height="16" x="2" y="4" rx="2"/>
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                    </svg>
+                    <span>help@americascountryclassics.com</span>
+                </a>
             </div>
         </section>
     </main>
@@ -377,8 +425,9 @@
     <footer>
         <p>&copy; 2026 SuiteSounds Entertainment, LLC. All Rights Reserved.</p>
     </footer>
+
 <script>
-    // Set the target date: December 26, 2026, at 08:00:00 in Mountain Time (MST/MDT)
+    // --- COUNTDOWN SCRIPT ---
     const targetDate = new Date("2026-12-26T08:00:00-07:00").getTime();
 
     function updateCountdown() {
@@ -402,9 +451,79 @@
         document.getElementById("seconds").innerText = String(seconds).padStart(2, '0');
     }
 
-    // Run immediately and update every second
     updateCountdown();
     const timerInterval = setInterval(updateCountdown, 1000);
+
+
+    // --- ICECAST NOW PLAYING & HISTORY SCRIPT ---
+    const ICECAST_URL = 'http://janus.cdnstream.com:5022/status-json.xsl';
+    const MOUNT_POINT = '/stream'; 
+    const REFRESH_INTERVAL = 30000; // Polls every 30 seconds
+
+    async function updateNowPlaying() {
+        try {
+            const response = await fetch(`${ICECAST_URL}?_=${new Date().getTime()}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            const data = await response.json();
+            const sources = data.icestats.source;
+            
+            let currentSource = Array.isArray(sources) 
+                ? sources.find(s => s.listenurl.includes(MOUNT_POINT)) 
+                : sources;
+
+            if (!currentSource) return;
+
+            const titleFull = currentSource.title || "Unknown - Unknown";
+            
+            let artist = "Live Broadcast";
+            let title = titleFull;
+            if (titleFull.includes(" - ")) {
+                const parts = titleFull.split(" - ");
+                artist = parts[0].trim();
+                title = parts.slice(1).join(" - ").trim();
+            }
+
+            document.getElementById('np-artist').textContent = artist;
+            document.getElementById('np-title').textContent = title;
+
+            updateHistory(artist, title);
+
+        } catch (error) {
+            console.error('Error fetching Icecast metadata:', error);
+        }
+    }
+
+    let songHistory = [];
+    function updateHistory(artist, title) {
+        const currentSongString = `${artist} — ${title}`;
+        
+        if (songHistory.length === 0 || songHistory[0] !== currentSongString) {
+            songHistory.unshift(currentSongString);
+            if (songHistory.length > 4) { // Keeps current + last 3 songs in memory
+                songHistory.pop();
+            }
+        }
+
+        const historyList = document.getElementById('np-history');
+        historyList.innerHTML = '';
+        
+        if (songHistory.length <= 1) {
+            const li = document.createElement('li');
+            li.textContent = "Accumulating history...";
+            historyList.appendChild(li);
+            return;
+        }
+
+        for (let i = 1; i < songHistory.length; i++) {
+            const li = document.createElement('li');
+            li.textContent = songHistory[i];
+            historyList.appendChild(li);
+        }
+    }
+
+    updateNowPlaying();
+    setInterval(updateNowPlaying, REFRESH_INTERVAL);
 </script>
 
 </body>
