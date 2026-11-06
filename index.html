@@ -453,77 +453,48 @@
     updateCountdown();
     const timerInterval = setInterval(updateCountdown, 1000);
 
-
-    // --- ICECAST NOW PLAYING & HISTORY SCRIPT ---
-    const ICECAST_URL = 'https://janus.cdnstream.com/proxy/tmarinitest/status-json.xsl';
-    const MOUNT_POINT = '/stream'; 
-    const REFRESH_INTERVAL = 30000; // Polls every 30 seconds
-
-    async function updateNowPlaying() {
-        try {
-            const response = await fetch(`${ICECAST_URL}?_=${new Date().getTime()}`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            
-            const data = await response.json();
-            const sources = data.icestats.source;
-            
-            let currentSource = Array.isArray(sources) 
-                ? sources.find(s => s.listenurl.includes(MOUNT_POINT)) 
-                : sources;
-
-            if (!currentSource) return;
-
-            const titleFull = currentSource.title || "Unknown - Unknown";
-            
-            let artist = "Live Broadcast";
-            let title = titleFull;
-            if (titleFull.includes(" - ")) {
-                const parts = titleFull.split(" - ");
-                artist = parts[0].trim();
-                title = parts.slice(1).join(" - ").trim();
-            }
-
-            document.getElementById('np-artist').textContent = artist;
-            document.getElementById('np-title').textContent = title;
-
-            updateHistory(artist, title);
-
-        } catch (error) {
-            console.error('Error fetching Icecast metadata:', error);
-        }
-    }
-
-    let songHistory = [];
-    function updateHistory(artist, title) {
-        const currentSongString = `${artist} — ${title}`;
+async function fetchServerHistory() {
+    try {
+        const response = await fetch('history.json?_=' + new Date().getTime());
+        if (!response.ok) return;
         
-        if (songHistory.length === 0 || songHistory[0] !== currentSongString) {
-            songHistory.unshift(currentSongString);
-            if (songHistory.length > 4) { // Keeps current + last 3 songs in memory
-                songHistory.pop();
-            }
+        const fullHistory = await response.json();
+        if (!Array.isArray(fullHistory) || fullHistory.length === 0) return;
+
+        // Take only the current + 3 recent tracks for the main widget
+        const history = fullHistory.slice(0, 4);
+
+        // Index 0 = Now Playing
+        const currentFull = history[0];
+        let artist = "Live Broadcast";
+        let title = currentFull;
+        if (currentFull.includes(" - ")) {
+            const parts = currentFull.split(" - ");
+            artist = parts[0].trim();
+            title = parts.slice(1).join(" - ").trim();
         }
 
+        document.getElementById('np-artist').textContent = artist;
+        document.getElementById('np-title').textContent = title;
+
+        // Indices 1..3 = Recently Played
         const historyList = document.getElementById('np-history');
         historyList.innerHTML = '';
-        
-        if (songHistory.length <= 1) {
+
+        for (let i = 1; i < history.length; i++) {
             const li = document.createElement('li');
-            li.textContent = "Accumulating history...";
+            li.textContent = history[i];
             historyList.appendChild(li);
-            return;
         }
 
-        for (let i = 1; i < songHistory.length; i++) {
-            const li = document.createElement('li');
-            li.textContent = songHistory[i];
-            historyList.appendChild(li);
-        }
+    } catch (error) {
+        console.error('Error fetching history.json:', error);
     }
+}
 
-    updateNowPlaying();
-    setInterval(updateNowPlaying, REFRESH_INTERVAL);
-</script>
+fetchServerHistory();
+setInterval(fetchServerHistory, 20000);
+
 
 </body>
 </html>
