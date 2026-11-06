@@ -374,6 +374,9 @@
                   <li>Loading history...</li>
                 </ul>
               </div>
+                <button onclick="openHistoryModal()" style="background: none; border: none; color: #f59e0b; cursor: pointer; text-decoration: underline; font-family: inherit; font-size: 0.9rem; margin-top: 10px; padding: 0;">
+    View Full 12-Hour History &rarr;
+</button>
             </div> 
            
             <!-- Countdown Timer Container -->
@@ -511,8 +514,88 @@
     // Run immediately when page loads, then check for updates every 20 seconds
     fetchServerHistory();
     setInterval(fetchServerHistory, 20000);
+    async function openHistoryModal() {
+    const modal = document.getElementById('history-modal');
+    modal.style.display = 'flex';
+
+    try {
+        const response = await fetch('history.json?_=' + new Date().getTime());
+        if (!response.ok) return;
+
+        const history = await response.json();
+        const container = document.getElementById('modal-history-list');
+        container.innerHTML = '';
+
+        if (!Array.isArray(history) || history.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af; text-align: center;">No history available yet.</p>';
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.style.cssText = 'list-style: none; padding: 0; margin: 0;';
+
+        history.forEach((track, index) => {
+            let artist = "Live Broadcast";
+            let title = track;
+            if (track.includes(" - ")) {
+                const parts = track.split(" - ");
+                artist = parts[0].trim();
+                title = parts.slice(1).join(" - ").trim();
+            } else if (track.includes(" — ")) {
+                const parts = track.split(" — ");
+                artist = parts[0].trim();
+                title = parts.slice(1).join(" — ").trim();
+            }
+
+            const li = document.createElement('li');
+            li.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #2e2823; display: flex; flex-direction: column;';
+            
+            if (index === 0) {
+                li.innerHTML = `
+                    <span style="font-size: 0.7rem; background: #d97706; color: #fff; width: fit-content; padding: 1px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px;">NOW PLAYING</span>
+                    <span style="font-weight: bold; color: #f3f4f6;">${title}</span>
+                    <span style="color: #9ca3af; font-size: 0.85rem;">${artist}</span>
+                `;
+            } else {
+                li.innerHTML = `
+                    <span style="font-weight: bold; color: #f3f4f6;">${title}</span>
+                    <span style="color: #9ca3af; font-size: 0.85rem;">${artist}</span>
+                `;
+            }
+            ul.appendChild(li);
+        });
+
+        container.appendChild(ul);
+    } catch (err) {
+        console.error('Failed to load modal history:', err);
+    }
+}
+
+function closeHistoryModal() {
+    document.getElementById('history-modal').style.display = 'none';
+}
+
+// Close modal automatically if user clicks outside the content box
+window.onclick = function(event) {
+    const modal = document.getElementById('history-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
 </script>
 
+<!-- Full History Modal Overlay -->
+<div id="history-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: #1c1a17; border: 1px solid #2e2823; border-radius: 8px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+        <div style="padding: 15px 20px; border-bottom: 1px solid #2e2823; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; color: #f59e0b; font-size: 1.2rem;">Extended Song History</h3>
+            <button onclick="closeHistoryModal()" style="background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer;">&times;</button>
+        </div>
+        <div id="modal-history-list" style="padding: 15px 20px; overflow-y: auto; flex-grow: 1; list-style: none; margin: 0;">
+            <p style="color: #9ca3af; text-align: center;">Loading history...</p>
+        </div>
+    </div>
+</div>
 
 </body>
 </html>
