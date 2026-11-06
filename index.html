@@ -514,6 +514,7 @@
     // Run immediately when page loads, then check for updates every 20 seconds
     fetchServerHistory();
     setInterval(fetchServerHistory, 20000);
+   // full history modal
     async function openHistoryModal() {
     const modal = document.getElementById('history-modal');
     modal.style.display = 'flex';
@@ -575,13 +576,23 @@ function closeHistoryModal() {
     document.getElementById('history-modal').style.display = 'none';
 }
 
-// Close modal automatically if user clicks outside the content box
+// Close modal when clicking outside the content box
 window.onclick = function(event) {
     const modal = document.getElementById('history-modal');
     if (event.target === modal) {
         modal.style.display = 'none';
     }
 }
+
+// Close modal when pressing the Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('history-modal');
+        if (modal && modal.style.display === 'flex') {
+            modal.style.display = 'none';
+        }
+    }
+});
 </script>
 
 <!-- Full History Modal Overlay -->
