@@ -6,12 +6,12 @@
     <title>America's Country Classics | You grew up here...</title>
     <meta name="description" content="Listen to America's Country Classics. You grew up here... Remember classic country hits from the 90s and 2000s!">
 
-    <link rel="icon" type="image/png" href="images/favicon-96x96.png" sizes="96x96" />
-    <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-    <link rel="shortcut icon" href="images/favicon.ico" />
-    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="ACClassics" />
-    <link rel="manifest" href="site.webmanifest" />
+    <link rel="icon" type="image/png" href="images/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="images/favicon.svg">
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+    <meta name="apple-mobile-web-app-title" content="ACClassics">
+    <link rel="manifest" href="site.webmanifest">
     
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="music.radio_station">
@@ -40,7 +40,6 @@
     </script>
     
     <style>
-        /* Local Fonts Declarations */
         @font-face {
             font-family: 'Bree Serif';
             src: url('/fonts/bree-serif-v18-latin-regular.woff2') format('woff2');
@@ -81,7 +80,6 @@
             font-display: swap;
         }
 
-        /* Root Color Variables */
         :root {
             --bg-dark: #121212;
             --bg-card: #1c1a17;
@@ -92,7 +90,6 @@
             --border-color: #2e2823;
         }
 
-        /* Global Reset */
         * {
             box-sizing: border-box;
             margin: 0;
@@ -126,7 +123,6 @@
             justify-content: center;
         }
 
-        /* Logo Image Styling */
         .site-logo {
             max-width: 320px;
             width: 100%;
@@ -176,7 +172,6 @@
             margin-bottom: 25px;
         }
 
-        /* Now Playing Widget Styling */
         .radio-widget {
             background: #121212;
             border: 1px solid var(--border-color);
@@ -240,7 +235,22 @@
             text-overflow: ellipsis;
         }
 
-        /* Social Links */
+        .history-btn {
+            background: none;
+            border: none;
+            color: var(--accent-gold);
+            cursor: pointer;
+            text-decoration: underline;
+            font-family: inherit;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            padding: 0;
+        }
+
+        .history-btn:hover {
+            color: #fbbf24;
+        }
+
         .social-links {
             display: flex;
             justify-content: center;
@@ -266,10 +276,6 @@
             transform: translateY(-2px);
         }
 
-        .social-links svg {
-            flex-shrink: 0;
-        }
-
         footer {
             background-color: #0a0a0a;
             border-top: 1px solid var(--border-color);
@@ -289,15 +295,6 @@
             text-decoration: underline;
         }
 
-        @media (max-width: 600px) {
-            .site-logo { max-width: 240px; }
-            h1 { font-size: 1.75rem; }
-            h2 { font-size: 1.05rem; }
-            .player-card { padding: 20px 15px; }
-            .social-links { gap: 15px; }
-        }
-
-        /* Countdown Timer Styling */
         .countdown-container {
             margin: 20px 0;
             text-align: center;
@@ -340,6 +337,73 @@
             text-transform: uppercase;
             margin-top: 2px;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--accent-gold);
+            font-size: 1.2rem;
+            font-family: 'Bree Serif', serif;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: var(--text-light);
+        }
+
+        .modal-body {
+            padding: 15px 20px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 600px) {
+            .site-logo { max-width: 240px; }
+            h1 { font-size: 1.75rem; }
+            h2 { font-size: 1.05rem; }
+            .player-card { padding: 20px 15px; }
+            .social-links { gap: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -347,11 +411,7 @@
     <header>
         <div class="header-container">
             <a href="https://americascountry.us/classics">
-                <img 
-                    src="images/acclogo-tr.png" 
-                    alt="America's Country Classics Logo" 
-                    class="site-logo"
-                >
+                <img src="images/acclogo-tr.png" alt="America's Country Classics Logo" class="site-logo">
             </a>
         </div>
     </header>
@@ -374,9 +434,10 @@
                   <li>Loading history...</li>
                 </ul>
               </div>
-                <button onclick="openHistoryModal()" style="background: none; border: none; color: #f59e0b; cursor: pointer; text-decoration: underline; font-family: inherit; font-size: 0.9rem; margin-top: 10px; padding: 0;">
-    View More Song History &rarr;
-</button>
+              
+              <button onclick="openHistoryModal()" class="history-btn">
+                View More Song History &rarr;
+              </button>
             </div> 
            
             <!-- Countdown Timer Container -->
@@ -428,6 +489,19 @@
         <p>&copy; 2026 SuiteSounds Entertainment, LLC. All Rights Reserved.</p>
     </footer>
 
+    <!-- Full History Modal Overlay -->
+    <div id="history-modal" class="modal-overlay">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>Extended Song History</h3>
+                <button onclick="closeHistoryModal()" class="modal-close">&times;</button>
+            </div>
+            <div id="modal-history-list" class="modal-body">
+                <p style="color: var(--text-muted); text-align: center;">Loading history...</p>
+            </div>
+        </div>
+    </div>
+
 <script>
     // --- COUNTDOWN SCRIPT ---
     const targetDate = new Date("2026-12-26T08:00:00-07:00").getTime();
@@ -455,23 +529,19 @@
 
     updateCountdown();
     const timerInterval = setInterval(updateCountdown, 1000);
-</script>
 
-<script>
-    // Fetch persistent song history generated by the server-side cron script
+    // --- SONG HISTORY & NOW PLAYING SCRIPT ---
     async function fetchServerHistory() {
         try {
-            // Append cache-busting timestamp to prevent browser caching of static JSON
             const response = await fetch('history.json?_=' + new Date().getTime());
             if (!response.ok) return;
             
             const fullHistory = await response.json();
             if (!Array.isArray(fullHistory) || fullHistory.length === 0) return;
 
-            // Take only the current song (index 0) and the last 3 played (indices 1..3)
             const history = fullHistory.slice(0, 4);
 
-            // --- NOW PLAYING (Index 0) ---
+            // Now Playing (Index 0)
             const currentFull = history[0];
             let artist = "Live Broadcast";
             let title = currentFull;
@@ -489,7 +559,7 @@
             document.getElementById('np-artist').textContent = artist;
             document.getElementById('np-title').textContent = title;
 
-            // --- RECENTLY PLAYED (Indices 1..3) ---
+            // Recently Played (Indices 1..3)
             const historyList = document.getElementById('np-history');
             historyList.innerHTML = '';
             
@@ -511,102 +581,89 @@
         }
     }
 
-    // Run immediately when page loads, then check for updates every 20 seconds
     fetchServerHistory();
     setInterval(fetchServerHistory, 20000);
-   // full history modal
+
+    // --- MODAL POPUP FUNCTIONS ---
     async function openHistoryModal() {
-    const modal = document.getElementById('history-modal');
-    modal.style.display = 'flex';
-
-    try {
-        const response = await fetch('history.json?_=' + new Date().getTime());
-        if (!response.ok) return;
-
-        const history = await response.json();
-        const container = document.getElementById('modal-history-list');
-        container.innerHTML = '';
-
-        if (!Array.isArray(history) || history.length === 0) {
-            container.innerHTML = '<p style="color: #9ca3af; text-align: center;">No history available yet.</p>';
-            return;
-        }
-
-        const ul = document.createElement('ul');
-        ul.style.cssText = 'list-style: none; padding: 0; margin: 0;';
-
-                history.forEach((track, index) => {
-            let artist = "Live Broadcast";
-            let title = track;
-            if (track.includes(" - ")) {
-                const parts = track.split(" - ");
-                artist = parts[0].trim();
-                title = parts.slice(1).join(" - ").trim();
-            } else if (track.includes(" — ")) {
-                const parts = track.split(" — ");
-                artist = parts[0].trim();
-                title = parts.slice(1).join(" — ").trim();
-            }
-
-            const li = document.createElement('li');
-            li.style.cssText = 'padding: 10px 0; border-bottom: 1px solid #2e2823; display: flex; flex-direction: column;';
-            
-            if (index === 0) {
-                li.innerHTML = `
-                    <span style="font-size: 0.7rem; background: #d97706; color: #fff; width: fit-content; padding: 1px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px;">NOW PLAYING</span>
-                    <span style="font-weight: bold; color: #f3f4f6;">${artist}</span>
-                    <span style="color: #9ca3af; font-size: 0.85rem;">${title}</span>
-                `;
-            } else {
-                li.innerHTML = `
-                    <span style="font-weight: bold; color: #f3f4f6;">${artist}</span>
-                    <span style="color: #9ca3af; font-size: 0.85rem;">${title}</span>
-                `;
-            }
-            ul.appendChild(li);
-        });
-
-        container.appendChild(ul);
-    } catch (err) {
-        console.error('Failed to load modal history:', err);
-    }
-}
-
-function closeHistoryModal() {
-    document.getElementById('history-modal').style.display = 'none';
-}
-
-// Close modal when clicking outside the content box
-window.onclick = function(event) {
-    const modal = document.getElementById('history-modal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
-}
-
-// Close modal when pressing the Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
         const modal = document.getElementById('history-modal');
-        if (modal && modal.style.display === 'flex') {
+        modal.style.display = 'flex';
+
+        try {
+            const response = await fetch('history.json?_=' + new Date().getTime());
+            if (!response.ok) return;
+
+            const history = await response.json();
+            const container = document.getElementById('modal-history-list');
+            container.innerHTML = '';
+
+            if (!Array.isArray(history) || history.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); text-align: center;">No history available yet.</p>';
+                return;
+            }
+
+            const ul = document.createElement('ul');
+            ul.style.cssText = 'list-style: none; padding: 0; margin: 0;';
+
+            history.forEach((track, index) => {
+                let artist = "Live Broadcast";
+                let title = track;
+                if (track.includes(" - ")) {
+                    const parts = track.split(" - ");
+                    artist = parts[0].trim();
+                    title = parts.slice(1).join(" - ").trim();
+                } else if (track.includes(" — ")) {
+                    const parts = track.split(" — ");
+                    artist = parts[0].trim();
+                    title = parts.slice(1).join(" — ").trim();
+                }
+
+                const li = document.createElement('li');
+                li.style.cssText = 'padding: 10px 0; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column;';
+                
+                if (index === 0) {
+                    li.innerHTML = `
+                        <span style="font-size: 0.7rem; background: var(--accent-amber); color: #fff; width: fit-content; padding: 1px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px;">NOW PLAYING</span>
+                        <span style="font-weight: bold; color: var(--text-light);">${artist}</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">${title}</span>
+                    `;
+                } else {
+                    li.innerHTML = `
+                        <span style="font-weight: bold; color: var(--text-light);">${artist}</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">${title}</span>
+                    `;
+                }
+                ul.appendChild(li);
+            });
+
+            container.appendChild(ul);
+        } catch (err) {
+            console.error('Failed to load modal history:', err);
+        }
+    }
+
+    function closeHistoryModal() {
+        document.getElementById('history-modal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside the content box
+    window.onclick = function(event) {
+        const modal = document.getElementById('history-modal');
+        if (event.target === modal) {
             modal.style.display = 'none';
         }
     }
-});
-</script>
 
-<!-- Full History Modal Overlay -->
-<div id="history-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: #1c1a17; border: 1px solid #2e2823; border-radius: 8px; width: 90%; max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-        <div style="padding: 15px 20px; border-bottom: 1px solid #2e2823; display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin: 0; color: #f59e0b; font-size: 1.2rem;">Extended Song History</h3>
-            <button onclick="closeHistoryModal()" style="background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer;">&times;</button>
-        </div>
-        <div id="modal-history-list" style="padding: 15px 20px; overflow-y: auto; flex-grow: 1; list-style: none; margin: 0;">
-            <p style="color: #9ca3af; text-align: center;">Loading history...</p>
-        </div>
-    </div>
-</div>
+    // Close modal when pressing the Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modal = document.getElementById('history-modal');
+            if (modal && modal.style.display === 'flex') {
+                modal.style.display = 'none';
+            }
+        }
+    });
+</script>
 
 </body>
 </html>
