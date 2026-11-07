@@ -535,7 +535,7 @@
         const ul = document.createElement('ul');
         ul.style.cssText = 'list-style: none; padding: 0; margin: 0;';
 
-        history.forEach((track, index) => {
+                history.forEach((track, index) => {
             let artist = "Live Broadcast";
             let title = track;
             if (track.includes(" - ")) {
@@ -554,13 +554,13 @@
             if (index === 0) {
                 li.innerHTML = `
                     <span style="font-size: 0.7rem; background: #d97706; color: #fff; width: fit-content; padding: 1px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px;">NOW PLAYING</span>
-                    <span style="font-weight: bold; color: #f3f4f6;">${title}</span>
-                    <span style="color: #9ca3af; font-size: 0.85rem;">${artist}</span>
+                    <span style="font-weight: bold; color: #f3f4f6;">${artist}</span>
+                    <span style="color: #9ca3af; font-size: 0.85rem;">${title}</span>
                 `;
             } else {
                 li.innerHTML = `
-                    <span style="font-weight: bold; color: #f3f4f6;">${title}</span>
-                    <span style="color: #9ca3af; font-size: 0.85rem;">${artist}</span>
+                    <span style="font-weight: bold; color: #f3f4f6;">${artist}</span>
+                    <span style="color: #9ca3af; font-size: 0.85rem;">${title}</span>
                 `;
             }
             ul.appendChild(li);
