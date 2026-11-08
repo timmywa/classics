@@ -13,7 +13,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
     <meta name="apple-mobile-web-app-title" content="ACClassics">
     <link rel="manifest" href="site.webmanifest">
-    a
+    
     <!-- Open Graph / Social Media -->
     <meta property="og:type" content="music.radio_station">
     <meta property="og:title" content="America's Country Classics">
@@ -273,6 +273,12 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+        }
+
+        /* Bold artist in Recently Played: lighter than the gray title, softer than pure white */
+        .recent-tracks li strong {
+            color: #d1d5db;
+            font-weight: 700;
         }
 
         .history-btn {
