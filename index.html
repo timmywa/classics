@@ -153,6 +153,9 @@
             text-align: center;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         h1 {
@@ -183,10 +186,35 @@
             text-align: left;
         }
 
-        .current-track {
+        .current-track-flex {
+            display: flex;
+            align-items: center;
+            gap: 16px;
             margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
             padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .album-art-box {
+            width: 90px;
+            height: 90px;
+            flex-shrink: 0;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #111;
+            border: 1px solid var(--border-color);
+        }
+
+        .album-art-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .track-info {
+            flex-grow: 1;
+            overflow: hidden;
         }
 
         .current-track h3 {
@@ -199,16 +227,17 @@
         }
 
         .current-track .artist {
-            font-size: 1.15em;
-            color: var(--text-muted);
+            font-size: 1.1em;
+            color: var(--text-light);
             margin: 0 0 2px 0;
-            font-family: 'Bree Serif', serif;
+            font-family: 'Merriweather', serif;
+            font-weight: bold;
         }
 
         .current-track .title {
-            font-size: 1.35em;
-            font-weight: bold;
-            color: var(--text-light);
+            font-size: 1em;
+            font-weight: normal;
+            color: var(--text-muted);
             margin: 0;
         }
 
@@ -412,7 +441,7 @@
     <header>
         <div class="header-container">
             <a href="https://americascountryclassics.com">
-                <img src="images/acclogo-tr.png" alt="America's Country Classics Logo" class="site-logo">
+                <img src="images/acc-profile-logo.png" alt="America's Country Classics Logo" class="site-logo">
             </a>
         </div>
     </header>
@@ -425,8 +454,15 @@
             <div id="now-playing-widget" class="radio-widget">
               <div class="current-track">
                 <h3>What you'll be hearing soon....</h3>
-                <p id="np-artist" class="artist">Connecting to stream...</p>
-                <p id="np-title" class="title">Please wait...</p>
+                <div class="current-track-flex">
+                    <div class="album-art-box">
+                        <img id="album-art" src="images/acc-profile-logo.png" alt="Album Artwork" width="90" height="90">
+                    </div>
+                    <div class="track-info">
+                        <p id="np-artist" class="artist">Connecting to stream...</p>
+                        <p id="np-title" class="title">Please wait...</p>
+                    </div>
+                </div>
               </div>
               
               <div class="recent-tracks">
@@ -531,7 +567,9 @@
     updateCountdown();
     const timerInterval = setInterval(updateCountdown, 1000);
 
-    // --- SONG HISTORY & NOW PLAYING SCRIPT ---
+    // --- SONG HISTORY, ARTWORK & NOW PLAYING SCRIPT ---
+    let lastTrackKey = "";
+
     async function fetchServerHistory() {
         try {
             const response = await fetch('history.json?_=' + new Date().getTime());
@@ -560,6 +598,13 @@
             document.getElementById('np-artist').textContent = artist;
             document.getElementById('np-title').textContent = title;
 
+            // Fetch iTunes artwork if track changed
+            const trackKey = artist + " - " + title;
+            if (trackKey !== lastTrackKey && artist !== "Live Broadcast") {
+                lastTrackKey = trackKey;
+                updateAlbumArt(artist, title);
+            }
+
             // Recently Played (Indices 1..3)
             const historyList = document.getElementById('np-history');
             historyList.innerHTML = '';
@@ -573,13 +618,61 @@
 
             for (let i = 1; i < history.length; i++) {
                 const li = document.createElement('li');
-                li.textContent = history[i];
+                // Format history list with bold artist and normal title if separator exists
+                let hArtist = "";
+                let hTitle = history[i];
+                if (history[i].includes(" - ")) {
+                    const parts = history[i].split(" - ");
+                    hArtist = parts[0].trim();
+                    hTitle = parts.slice(1).join(" - ").trim();
+                    li.innerHTML = `<span style="font-weight: bold; color: var(--text-light);">${escapeHtml(hArtist)}</span> - <span style="color: var(--text-muted);">${escapeHtml(hTitle)}</span>`;
+                } else if (history[i].includes(" — ")) {
+                    const parts = history[i].split(" — ");
+                    hArtist = parts[0].trim();
+                    hTitle = parts.slice(1).join(" — ").trim();
+                    li.innerHTML = `<span style="font-weight: bold; color: var(--text-light);">${escapeHtml(hArtist)}</span> — <span style="color: var(--text-muted);">${escapeHtml(hTitle)}</span>`;
+                } else {
+                    li.textContent = history[i];
+                }
                 historyList.appendChild(li);
             }
 
         } catch (error) {
             console.error('Error fetching history.json:', error);
         }
+    }
+
+    function updateAlbumArt(artist, title) {
+        const imgEl = document.getElementById('album-art');
+        if (!artist || artist === "Live Broadcast") {
+            imgEl.src = 'images/acc-profile-logo.png';
+            return;
+        }
+
+        const cleanArtist = artist.split(/ft\.|feat\.|&|,/i)[0].trim();
+        const cleanTitle = title.split(/\(|\[|live|remix/i)[0].trim();
+        
+        const query = encodeURIComponent(`${cleanArtist} ${cleanTitle}`);
+        const url = `https://itunes.apple.com/search?term=${query}&entity=song&limit=1`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(result => {
+                if (result.results && result.results.length > 0) {
+                    const highResArt = result.results[0].artworkUrl100.replace('100x100bb', '300x300bb');
+                    imgEl.src = highResArt;
+                } else {
+                    imgEl.src = 'images/acc-profile-logo.png';
+                }
+            })
+            .catch(err => {
+                console.warn('Could not load album art:', err);
+                imgEl.src = 'images/acc-profile-logo.png';
+            });
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
     fetchServerHistory();
@@ -625,13 +718,13 @@
                 if (index === 0) {
                     li.innerHTML = `
                         <span style="font-size: 0.7rem; background: var(--accent-amber); color: #fff; width: fit-content; padding: 1px 6px; border-radius: 4px; font-weight: bold; margin-bottom: 4px;">NOW PLAYING</span>
-                        <span style="font-weight: bold; color: var(--text-light);">${artist}</span>
-                        <span style="color: var(--text-muted); font-size: 0.85rem;">${title}</span>
+                        <span style="font-weight: bold; color: var(--text-light);">${escapeHtml(artist)}</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(title)}</span>
                     `;
                 } else {
                     li.innerHTML = `
-                        <span style="font-weight: bold; color: var(--text-light);">${artist}</span>
-                        <span style="color: var(--text-muted); font-size: 0.85rem;">${title}</span>
+                        <span style="font-weight: bold; color: var(--text-light);">${escapeHtml(artist)}</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">${escapeHtml(title)}</span>
                     `;
                 }
                 ul.appendChild(li);
